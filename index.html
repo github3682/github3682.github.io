@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <canvas id="cv"></canvas>
+
+  <!--引入全局对象  -->
+  <script src="./js/fly.js"></script>
+  <!--引入小鸟对象  -->
+  <script src="./js/bird.js"></script>
+  <!--引入天空对象  -->
+  <script src="./js/sky.js"></script>
+  <script>
+    var cv = document.getElementById('cv');
+    cv.width = 800;
+    cv.height = 600;
+    cv.style.border = '1px solid red';
+
+    var context = cv.getContext('2d');
+    var toRadian = function (angle) {
+      return angle / 180 * Math.PI;
+    };
+    // 1 绘制小鸟（翅膀煽动）
+    // 2 绘制小鸟（小鸟下落）
+    // 3 绘制小鸟（小鸟跳动）
+    // 4 绘制小鸟（小鸟旋转）
+    //  小鸟下落, 小鸟往下旋转( 头朝下 ), 速度为正
+    //  小鸟跳动, 小鸟往上旋转( 头朝上 ), 速度为负
+    //  速度越大旋转角度越大
+
+    console.log(Fly);
+
+    // 游戏的图片资源
+    var imgSrcList = ['birds', 'land', 'pipe1', 'pipe2', 'sky'];
+    
+    Fly.loadImage(imgSrcList, function (imgList) {
+      // 只要这个函数调用了，就说明所有的图片都加载完成了！！！
+
+      // 创建小鸟对象
+      var bird = new Fly.Bird({
+        img: imgList.birds
+      });
+
+      var lastFrameTime = new Date(),   // 上一帧的时间
+        curFrameTime = 0,             // 当前帧时间
+        delta = 0;                    // 两帧时间间隔
+      
+      var skyImg = imgList.sky,
+        skyImgW = skyImg.width,
+        skyImgH = skyImg.height,
+        skySpeed = -0.2,
+        skyY = 0,
+        skyX1 = 0,
+        skyX2 = skyImgW;
+
+      (function render() {
+        curFrameTime = new Date();
+        // delta 表示两帧时间间隔
+        delta = curFrameTime - lastFrameTime;
+        lastFrameTime = curFrameTime;
+
+        // 清空画布
+        context.clearRect(0, 0, cv.width, cv.height);
+        // 保存状态
+        context.save();
+
+        // 绘制天空背景
+        context.drawImage(skyImg, skyX1, skyY);
+        context.drawImage(skyImg, skyX2, skyY);
+
+        // 计算天空背景的坐标
+        skyX1 += skySpeed * delta;
+        skyX2 += skySpeed * delta;
+        if(skyX1 <= -skyImgW) {
+          skyX1 += skyImgW * 2;
+          // 此处不能使用 skyX1 = skyImgW;
+          // 因为：skyX1不会与skyImgW完全相同，可能会存在一点偏差
+        }
+        if(skyX2 <= -skyImgW) {
+          skyX2 += skyImgW * 2;
+        }
+
+        // 绘制小鸟
+        bird.draw( delta );
+
+        // 恢复状态
+        context.restore();
+
+        requestAnimationFrame(render);
+      })();
+      
+      // 小鸟跳动
+      cv.addEventListener('click', function () {
+        bird.speed = -0.3;
+      });
+    });
+  </script>
+</body>
+
+</html>
